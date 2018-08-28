@@ -12,6 +12,7 @@ const register = (server, pluginOptions) => {
     http: {
       requests: {
         duration: new prom.Summary({ name: 'http_request_duration_milliseconds', help: 'request duration in milliseconds', labelNames: ['method', 'path', 'status'] }),
+        buckets: new prom.Histogram({ name: 'http_request_buckets_milliseconds', help: 'request duration buckets in milliseconds. Bucket size set to 500 and 2000 ms to enable apdex calculations with a T of 300ms', labelNames: ['method', 'path', 'status'], buckets: [ 500, 2000 ] })
       }
     }
   };
@@ -35,6 +36,7 @@ const register = (server, pluginOptions) => {
     const duration = ms(request.plugins['hapi-prom'].start);
     // todo: register the duration with metrics:
     metric.http.requests.duration.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
+    metric.http.requests.buckets.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
   });
   server.route({
     method: 'GET',
