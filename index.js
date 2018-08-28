@@ -34,7 +34,7 @@ const register = (server, pluginOptions) => {
       return;
     }
     const duration = ms(request.plugins['hapi-prom'].start);
-    // todo: register the duration with metrics:
+    // register the duration, broken down by method, path and HTTP code:
     metric.http.requests.duration.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
     metric.http.requests.buckets.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
   });
