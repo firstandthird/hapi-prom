@@ -7,6 +7,7 @@ const defaults = {
 
 const register = (server, pluginOptions) => {
   const options = Object.assign({}, defaults, pluginOptions);
+  // set up prom metrics observers:
   const metric = {
     http: {
       requests: {
@@ -14,19 +15,24 @@ const register = (server, pluginOptions) => {
       }
     }
   };
+  // time method:
+  const ms = (start) => {
+    var diff = process.hrtime(start)
+    return Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
+  };
   // these two handlers track request duration times:
   server.ext('onRequest', (request, h) => {
     if (request.path === options.metricsPath) {
       return h.continue;
     }
-    request.plugins['hapi-prom'] = { start: new Date().getTime() };
+    request.plugins['hapi-prom'] = { start: process.hrtime() };
     return h.continue;
   });
   server.events.on('response', (request) => {
     if (request.path === options.metricsPath) {
       return;
     }
-    const duration = new Date().getTime() - request.plugins['hapi-prom'].start;
+    const duration = ms(request.plugins['hapi-prom'].start);
     // todo: register the duration with metrics:
     metric.http.requests.duration.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
   });
@@ -34,7 +40,6 @@ const register = (server, pluginOptions) => {
     method: 'GET',
     path: options.metricsPath,
     async handler(request, h) {
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
       return prom.register.metrics();
     }
   });
