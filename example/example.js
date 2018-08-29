@@ -23,7 +23,16 @@ const f = async () => {
       }
       return 'whew!';
     }
-  })
+  });
+  // declare a route that has params, all calls will be
+  // logged under the route path, regardless of what the actual params are:
+  server.route({
+    method: 'get',
+    path: '/params/{param1}/{param2}',
+    handler(request, h) {
+      return request.params.param1;
+    }
+  });
   await server.start();
   console.log('Server started on port 8080');
   // get an array of calls to the /error and /slow routes (they are all Promises):
@@ -37,16 +46,24 @@ const f = async () => {
       method: 'get',
       url: '/slow'
     }));
+    await server.inject({
+      method: 'get',
+      // all of these calls will be logged under /params/{param1}/{param2}:
+      url: `/params/${Math.random()}/${Math.random()}`
+    });
   }
   // now wait for all those calls to return:
   await Promise.all(promisepromises);
+
   // now get the raw metrics from hapi-prom:
   const metrics = await server.inject({
     url: '/metrics',
     method: 'get'
   });
   console.log('Metrics are:');
+  console.log('######################################################################################################');
   console.log(metrics.payload);
+  console.log('######################################################################################################');
   await server.stop();
 };
 

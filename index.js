@@ -2,17 +2,25 @@ const prom = require('prom-client');
 const collectDefaultMetrics = prom.collectDefaultMetrics;
 
 const defaults = {
-  metricsPath: '/metrics'
+  metricsPath: '/metrics',
+  defaultMetrics: false,
+  labels: {
+    duration: ['method', 'path', 'status'],
+    buckets: ['method', 'path', 'status']
+  }
 };
 
 const register = (server, pluginOptions) => {
   const options = Object.assign({}, defaults, pluginOptions);
+  if (options.defaultMetrics) {
+    collectDefaultMetrics({ timeout: 5000 });
+  }
   // set up prom metrics observers:
   const metric = {
     http: {
       requests: {
-        duration: new prom.Summary({ name: 'http_request_duration_milliseconds', help: 'request duration in milliseconds', labelNames: ['method', 'path', 'status'] }),
-        buckets: new prom.Histogram({ name: 'http_request_buckets_milliseconds', help: 'request duration buckets in milliseconds. Bucket size set to 500 and 2000 ms to enable apdex calculations with a T of 300ms', labelNames: ['method', 'path', 'status'], buckets: [ 500, 2000 ] })
+        duration: new prom.Summary({ name: 'http_request_duration_milliseconds', help: 'request duration in milliseconds', labelNames: options.labels.duration }),
+        buckets: new prom.Histogram({ name: 'http_request_buckets_milliseconds', help: 'request duration buckets in milliseconds. Bucket sizes set to .1, .3, 1.2, 5', labelNames: options.labels.buckets, buckets: [ .1, .3, 1.2, 5 ] })
       }
     }
   };
@@ -33,10 +41,10 @@ const register = (server, pluginOptions) => {
     if (request.path === options.metricsPath) {
       return;
     }
-    const duration = ms(request.plugins['hapi-prom'].start);
+    const duration = ms(request.plugins['hapi-prom'].start) / 1000; // log in seconds
     // register the duration, broken down by method, path and HTTP code:
-    metric.http.requests.duration.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
-    metric.http.requests.buckets.labels(request.method, request.url.path, request.response.statusCode).observe(duration);
+    metric.http.requests.duration.labels(request.method, request.route.path, request.response.statusCode).observe(duration);
+    metric.http.requests.buckets.labels(request.method, request.route.path, request.response.statusCode).observe(duration);
   });
   server.route({
     method: 'GET',
