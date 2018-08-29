@@ -47,7 +47,7 @@ const f = async () => {
   });
   console.log('Metrics are:');
   console.log(metrics.payload);
-  await server.stop();
+  //await server.stop();
 };
 
 f();
