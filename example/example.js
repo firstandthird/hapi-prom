@@ -13,6 +13,14 @@ const f = async () => {
       return 'ok';
     }
   });
+
+  server.route({
+    method: 'get',
+    path: '/user/{slug}',
+    async handler(request, h) {
+      return request.params.slug;
+    }
+  });
   // declare a route that errors randomly:
   server.route({
     method: 'get',
@@ -37,6 +45,11 @@ const f = async () => {
       method: 'get',
       url: '/slow'
     }));
+    promisepromises.push(server.inject({
+      method: 'get',
+      url: `/user/name${i}`
+    }));
+
   }
   // now wait for all those calls to return:
   await Promise.all(promisepromises);
