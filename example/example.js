@@ -3,7 +3,12 @@ const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const f = async () => {
   const server = new Hapi.Server({ port: 8080 });
-  await server.register(require('../index.js'));
+  await server.register({
+    plugin: require('../index.js'),
+    options: {
+      defaultMetrics: true
+    }
+  });
   // declare a route that takes a random amount of time before returning:
   server.route({
     method: 'get',
