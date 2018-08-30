@@ -1,6 +1,6 @@
 {
   "name": "hapi-prom",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "hapi plugin for interacting with prometheus.io",
   "main": "index.js",
   "repository": {
