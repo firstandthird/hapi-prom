@@ -23,16 +23,16 @@ const register = (server, pluginOptions) => {
   const metric = {
     methods: {
       cache: {
-        hits: new prom.Counter({ name: 'cache_hits', help: 'cache hits', labelNames: ['method'] }),
-        gets: new prom.Counter({ name: 'cache_gets', help: 'cache gets', labelNames: ['method']  }),
-        sets: new prom.Counter({ name: 'cache_sets', help: 'cache sets', labelNames: ['method']  }),
-        misses: new prom.Counter({ name: 'cache_misses', help: 'cache misses', labelNames: ['method']  }),
-        stales: new prom.Counter({ name: 'cache_stales', help: 'cache stales', labelNames: ['method']  })
+        hits: new prom.Counter({ name: 'hapi_method_cache_hits', help: 'hapi server method cache hits', labelNames: ['method'] }),
+        gets: new prom.Counter({ name: 'hapi_method_cache_gets', help: 'hapi server cache gets', labelNames: ['method']  }),
+        sets: new prom.Counter({ name: 'hapi_method_cache_sets', help: 'hapi server cache sets', labelNames: ['method']  }),
+        misses: new prom.Counter({ name: 'hapi_method_cache_misses', help: 'hapi server cache misses', labelNames: ['method']  }),
+        stales: new prom.Counter({ name: 'hapi_method_cache_stales', help: 'hapi server cache stales', labelNames: ['method']  })
       }
     },
     http: {
       requests: {
-        buckets: new prom.Histogram({ name: 'http_request_duration_seconds', help: 'request duration buckets in seconds. Bucket sizes set to .1, .3, 1.2, 5', labelNames: options.labels.buckets, buckets: [ .1, .3, 1.2, 5 ] })
+        buckets: new prom.Histogram({ name: 'hapi_request_duration_seconds', help: 'request duration buckets in seconds. Bucket sizes set to .1, .3, 1.2, 5', labelNames: options.labels.buckets, buckets: [ .1, .3, 1.2, 5 ] })
       }
     }
   };
