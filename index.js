@@ -7,7 +7,8 @@ const defaults = {
   defaultLabels: false,
   labels: {
     buckets: ['method', 'path', 'status']
-  }
+  },
+  cachePollInterval: 5000
 };
 
 const register = (server, pluginOptions) => {
@@ -20,17 +21,44 @@ const register = (server, pluginOptions) => {
   }
   // set up prom metrics observers:
   const metric = {
+    methods: {
+      cache: {
+        hits: new prom.Counter({ name: 'cache_hits', help: 'cache hits', labelNames: ['method'] }),
+        gets: new prom.Counter({ name: 'cache_gets', help: 'cache gets', labelNames: ['method']  }),
+        sets: new prom.Counter({ name: 'cache_sets', help: 'cache sets', labelNames: ['method']  }),
+        misses: new prom.Counter({ name: 'cache_misses', help: 'cache misses', labelNames: ['method']  }),
+        stales: new prom.Counter({ name: 'cache_stales', help: 'cache stales', labelNames: ['method']  })
+      }
+    },
     http: {
       requests: {
         buckets: new prom.Histogram({ name: 'http_request_duration_seconds', help: 'request duration buckets in seconds. Bucket sizes set to .1, .3, 1.2, 5', labelNames: options.labels.buckets, buckets: [ .1, .3, 1.2, 5 ] })
       }
     }
   };
+
   // time method:
   const ms = (start) => {
     var diff = process.hrtime(start)
     return Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
   };
+  // counter update method:
+  const countMethod = (metricName, methodName) => {
+    const counter = metric.methods.cache[metricName]
+    const prev = counter.hashMap[`method:${methodName}`] ? counter.hashMap[`method:${methodName}`].value : 0;
+    const cur = server.methods[methodName].cache.stats[metricName];
+    counter.labels(methodName).inc(cur - prev);
+  }
+  // polling interval to get method cache stats:
+  setInterval(() => {
+    Object.keys(server.methods).forEach(methodName => {
+      const method = server.methods[methodName];
+      if (method.cache && method.cache.stats) {
+        // set each of the statuses:
+        ['hits', 'gets', 'sets', 'misses', 'stales'].forEach(metricName => countMethod(metricName, methodName));
+      }
+    });
+  }, options.cachePollInterval);
   // these two handlers track request duration times:
   server.ext('onRequest', (request, h) => {
     if (request.path === options.metricsPath) {
