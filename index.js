@@ -50,7 +50,7 @@ const register = (server, pluginOptions) => {
     counter.labels(methodName).inc(cur - prev);
   }
   // polling interval to get method cache stats:
-  setInterval(() => {
+  const intervalRef = setInterval(() => {
     Object.keys(server.methods).forEach(methodName => {
       const method = server.methods[methodName];
       if (method.cache && method.cache.stats) {
@@ -59,6 +59,10 @@ const register = (server, pluginOptions) => {
       }
     });
   }, options.cachePollInterval);
+  server.events.on('stop', () => {
+    prom.register.clear();
+    clearInterval(intervalRef);
+  });
   // these two handlers track request duration times:
   server.ext('onRequest', (request, h) => {
     if (request.path === options.metricsPath) {
