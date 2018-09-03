@@ -6,9 +6,15 @@ const f = async () => {
   await server.register({
     plugin: require('../index.js'),
     options: {
-      defaultMetrics: true
+      defaultMetrics: true, // set to true to also poll Prometheus default metrics
+      cachePollInterval: 1000 // ms between polling server methods for cache states
     }
   });
+
+  // declare a method that has a cache:
+  const add = (a, b) => (a + b);
+  server.method('sum', add, { cache: { expiresIn: 200, generateTimeout: 100 } });
+
   // declare a route that takes a random amount of time before returning:
   server.route({
     method: 'get',
@@ -46,9 +52,10 @@ const f = async () => {
       return request.params.param1;
     }
   });
+
   await server.start();
   console.log('Server started on port 8080');
-  // get an array of calls to the /error and /slow routes (they are all Promises):
+  // get an array of calls to the /error and /slow routes and the server method call:
   const promisepromises = [];
   for (var i = 0; i < 50; i++) {
     promisepromises.push(server.inject({
@@ -59,6 +66,10 @@ const f = async () => {
       method: 'get',
       url: '/slow'
     }));
+    promisepromises.push(new Promise(async resolve => {
+      server.methods.sum(i % 5, 1);
+      resolve();
+    }));
     await server.inject({
       method: 'get',
       // all of these calls will be logged under /params/{param1}/{param2}:
@@ -67,7 +78,6 @@ const f = async () => {
   }
   // now wait for all those calls to return:
   await Promise.all(promisepromises);
-
   // now get the raw metrics from hapi-prom:
   const metrics = await server.inject({
     url: '/metrics',
