@@ -75,9 +75,11 @@ const register = (server, pluginOptions) => {
     if (request.path === options.metricsPath) {
       return;
     }
-    const duration = ms(request.plugins['hapi-prom'].start) / 1000; // log in seconds
-    // register the duration, broken down by method, path and HTTP code:
-    metric.http.requests.buckets.labels(request.method, request.route.path, request.response.statusCode).observe(duration);
+    if (request.plugins['hapi-prom'] && request.plugins['hapi-prom'].start) {
+      const duration = ms(request.plugins['hapi-prom'].start) / 1000; // log in seconds
+      // register the duration, broken down by method, path and HTTP code:
+      metric.http.requests.buckets.labels(request.method, request.route.path, request.response.statusCode).observe(duration);
+    }
   });
   server.route({
     method: 'GET',
