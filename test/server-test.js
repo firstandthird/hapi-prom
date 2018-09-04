@@ -1,8 +1,8 @@
 const tap = require('tap');
 const Hapi = require('hapi');
+const cookie = require('hapi-auth-cookie');
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// todo: tests don't do anything interesting yet:
 tap.test('provides a metrics route', async t => {
   const server = new Hapi.Server({ port: 8080 });
   await server.register({
@@ -47,6 +47,25 @@ tap.test('provides a metrics route', async t => {
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="1.2",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="5",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="+Inf",method="get",path="/slow",status="200"}`);
+  await server.stop();
+  t.end();
+});
+
+tap.test('auth is false by default', async t => {
+  const server = new Hapi.Server({ port: 8080 });
+  await server.register({
+    plugin: require('../index.js'),
+  });
+  await server.register(cookie);
+  server.auth.strategy('session', 'cookie', { password: 'password-should-be-32-characters'});
+  server.auth.default('session');
+  await server.start();
+
+  let res = await server.inject({
+    url: '/metrics',
+    method: 'get'
+  });
+  t.equal(res.statusCode, 200);
   await server.stop();
   t.end();
 });

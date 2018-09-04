@@ -8,7 +8,8 @@ const defaults = {
   labels: {
     buckets: ['method', 'path', 'status']
   },
-  cachePollInterval: 5000
+  cachePollInterval: 5000,
+  auth: false
 };
 
 const register = (server, pluginOptions) => {
@@ -84,6 +85,9 @@ const register = (server, pluginOptions) => {
   server.route({
     method: 'GET',
     path: options.metricsPath,
+    config: {
+      auth: options.auth
+    },
     async handler(request, h) {
       return prom.register.metrics();
     }
