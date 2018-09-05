@@ -86,7 +86,7 @@ const register = (server, pluginOptions) => {
       return prom.register.metrics();
     }
   });
-  server.plugins['hapi-prom'] = { client: prom };
+  server.expose('client', prom);
 };
 
 exports.plugin = {
