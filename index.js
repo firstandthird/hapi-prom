@@ -45,7 +45,7 @@ const register = (server, pluginOptions) => {
   };
   let intervalRef;
   // only poll method caches if server caching is enabled and plugin option enabled:
-  if (server.settings.cache !== false && options.cachePollInterval) {
+  if (server.settings.cache !== false && options.cachePollInterval !== false && options.cachePollInterval > 0) {
     // counter update method:
     const countMethod = (metricName, methodName) => {
       const counter = metric.methods.cache[metricName]
