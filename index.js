@@ -44,8 +44,8 @@ const register = (server, pluginOptions) => {
     return Math.round((diff[0] * 1e9 + diff[1]) / 1000000)
   };
   let intervalRef;
-  // only poll method caches if server caching is enabled:
-  if (server.settings.cache !== false) {
+  // only poll method caches if server caching is enabled and plugin option enabled:
+  if (server.settings.cache !== false && options.cachePollInterval) {
     // counter update method:
     const countMethod = (metricName, methodName) => {
       const counter = metric.methods.cache[metricName]
