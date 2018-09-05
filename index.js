@@ -86,6 +86,7 @@ const register = (server, pluginOptions) => {
       return prom.register.metrics();
     }
   });
+  server.expose('client', prom);
 };
 
 exports.plugin = {
