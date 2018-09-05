@@ -37,6 +37,7 @@ tap.test('provides a metrics route', async t => {
     url: '/metrics',
     method: 'get'
   });
+  t.ok(server.plugins['hapi-prom'].client, 'expose the prom client');
   t.match(res.payload, `hapi_method_cache_hits{method="sum"} 0`);
   t.match(res.payload, `hapi_method_cache_gets{method="sum"} 50`);
   t.match(res.payload, `hapi_method_cache_sets{method="sum"} 5`);
