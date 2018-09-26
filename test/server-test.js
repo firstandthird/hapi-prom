@@ -43,8 +43,8 @@ tap.test('provides a metrics route', async t => {
   t.match(res.payload, `hapi_method_cache{method="sum",type="gets"}`);
   t.match(res.payload, `hapi_method_cache{method="sum",type="generates"}`);
   t.match(res.payload, `hapi_method_cache{method="sum",type="errors"}`);
-  t.notMatch(res.payload, `hapi_method_cache_misses{method="sum"} NaN`, 'does not report NaNs');
-  t.match(res.payload, `hapi_method_cache_stales{method="sum"} 0`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum"},type="misses"`, 'does not report NaNs');
+  t.match(res.payload, `hapi_method_cache{method="sum",type="stales"} 0`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.1",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.3",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="1.2",method="get",path="/slow",status="200"}`);

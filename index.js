@@ -24,9 +24,7 @@ const register = (server, pluginOptions) => {
   const metric = {
     methods: {
       cache: {
-        stats: new prom.Counter({ name: 'hapi_method_cache', help: 'hapi server method cache', labelNames: ['method', 'type'] }),
-        misses: new prom.Counter({ name: 'hapi_method_cache_misses', help: 'hapi server cache misses', labelNames: ['method']  }),
-        stales: new prom.Counter({ name: 'hapi_method_cache_stales', help: 'hapi server cache stales', labelNames: ['method']  })
+        stats: new prom.Counter({ name: 'hapi_method_cache', help: 'hapi server method cache', labelNames: ['method', 'type'] })
       }
     },
     http: {
@@ -51,11 +49,7 @@ const register = (server, pluginOptions) => {
       const key = type || metricName;
       const cur = server.methods[methodName].cache.stats[key];
       if (typeof prev === 'number' && typeof cur === 'number') {
-        if (type) {
-          counter.labels(methodName, type).inc(cur - prev);
-        } else {
-          counter.labels(methodName).inc(cur - prev);
-        }
+        counter.labels(methodName, type).inc(cur - prev);
       }
     }
     // polling interval to get method cache stats:
@@ -64,8 +58,7 @@ const register = (server, pluginOptions) => {
         const method = server.methods[methodName];
         if (method.cache && method.cache.stats) {
           // set each of the statuses:
-          ['hits', 'sets', 'gets', 'generates', 'errors'].forEach(label => { countMethod('stats', methodName, label) });
-          ['misses', 'stales'].forEach(metricName => countMethod(metricName, methodName));
+          ['hits', 'sets', 'gets', 'generates', 'errors', 'misses', 'stales'].forEach(label => { countMethod('stats', methodName, label) });
         }
       });
     }, options.cachePollInterval);
