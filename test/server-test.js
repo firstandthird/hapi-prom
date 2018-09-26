@@ -38,9 +38,11 @@ tap.test('provides a metrics route', async t => {
     method: 'get'
   });
   t.ok(server.plugins['hapi-prom'].client, 'expose the prom client');
-  t.match(res.payload, `hapi_method_cache_hits{method="sum"} 0`);
-  t.match(res.payload, `hapi_method_cache_gets{method="sum"} 50`);
-  t.match(res.payload, `hapi_method_cache_sets{method="sum"} 5`);
+  t.match(res.payload, `hapi_method_cache{method="sum",type="hits"} 0`);
+  t.match(res.payload, `hapi_method_cache{method="sum",type="sets"}`);
+  t.match(res.payload, `hapi_method_cache{method="sum",type="gets"}`);
+  t.match(res.payload, `hapi_method_cache{method="sum",type="generates"}`);
+  t.match(res.payload, `hapi_method_cache{method="sum",type="errors"}`);
   t.notMatch(res.payload, `hapi_method_cache_misses{method="sum"} NaN`, 'does not report NaNs');
   t.match(res.payload, `hapi_method_cache_stales{method="sum"} 0`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.1",method="get",path="/slow",status="200"}`);
