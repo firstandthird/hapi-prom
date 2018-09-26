@@ -126,11 +126,10 @@ tap.test('no cache metrics if server cache disabled', async t => {
     url: '/metrics',
     method: 'get'
   });
-  t.notMatch(res.payload, `hapi_method_cache_hits{method="sum"} 0`);
-  t.notMatch(res.payload, `hapi_method_cache_gets{method="sum"} 50`);
-  t.notMatch(res.payload, `hapi_method_cache_sets{method="sum"} 5`);
-  t.notMatch(res.payload, `hapi_method_cache_misses{method="sum"} NaN`);
-  t.notMatch(res.payload, `hapi_method_cache_stales{method="sum"} 0`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum",type="hits"}`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum",type="misses"}`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum,type="stales"}`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum",type="gets"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.1",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.3",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="1.2",method="get",path="/slow",status="200"}`);
@@ -174,11 +173,10 @@ tap.test('no cache metrics if plugin option disabled', async t => {
     url: '/metrics',
     method: 'get'
   });
-  t.notMatch(res.payload, `hapi_method_cache_hits{method="sum"} 0`);
-  t.notMatch(res.payload, `hapi_method_cache_gets{method="sum"} 50`);
-  t.notMatch(res.payload, `hapi_method_cache_sets{method="sum"} 5`);
-  t.notMatch(res.payload, `hapi_method_cache_misses{method="sum"} NaN`);
-  t.notMatch(res.payload, `hapi_method_cache_stales{method="sum"} 0`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum",type="hits"}`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum",type="misses"}`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum,type="stales"}`);
+  t.notMatch(res.payload, `hapi_method_cache{method="sum",type="gets"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.1",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="0.3",method="get",path="/slow",status="200"}`);
   t.match(res.payload, `hapi_request_duration_seconds_bucket{le="1.2",method="get",path="/slow",status="200"}`);
