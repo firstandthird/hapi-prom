@@ -97,7 +97,7 @@ const register = (server, pluginOptions) => {
       auth: options.auth
     },
     async handler(request, h) {
-      return prom.register.metrics();
+      return h.response(prom.register.metrics()).type('text/plain');
     }
   });
   server.expose('client', prom);
