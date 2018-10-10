@@ -13,12 +13,13 @@ const defaults = {
 };
 
 const register = (server, pluginOptions) => {
+  let defaultIntervalRef;
   const options = Object.assign({}, defaults, pluginOptions);
   if (options.defaultLabels) {
     prom.register.setDefaultLabels(options.defaultLabels);
   }
   if (options.defaultMetrics) {
-    collectDefaultMetrics({ timeout: 5000 });
+    defaultIntervalRef = collectDefaultMetrics({ timeout: 5000 });
   }
   // set up prom metrics observers:
   const metric = {
@@ -64,10 +65,13 @@ const register = (server, pluginOptions) => {
     }, options.cachePollInterval);
   }
   server.events.on('stop', () => {
-    prom.register.clear();
+    if (defaultIntervalRef) {
+      clearInterval(defaultIntervalRef);
+    }
     if (intervalRef) {
       clearInterval(intervalRef);
     }
+    prom.register.clear();
   });
   // these two handlers track request duration times:
   server.ext('onRequest', (request, h) => {
