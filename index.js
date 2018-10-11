@@ -110,19 +110,12 @@ const register = (server, pluginOptions) => {
     help: 'a timing function'
   });
   const time = name => timingSummary.startTimer({ name });
-  const promCounters = {};
-  const counter = name => {
-    // prom names must be all one word:
-    name = name.replace(' ', '_');
-    if (!promCounters[name]) {
-      promCounters[name] = new prom.Counter({
-        name,
-        help: `counter_${name}`
-      });
-    }
-    promCounters[name].inc();
-  };
-  //should be combined with timer above
+  const promCounter = new prom.Counter({
+    name: 'hapi_counter',
+    help: `counter for hapi`,
+    labelNames: ['name']
+  });
+  const counter = name => promCounter.inc({ name });
   server.decorate('server', 'prom', { startTimer: time, incCounter: counter });
   server.expose('client', prom);
 };

@@ -230,6 +230,6 @@ tap.test('provides a counter metric', async t => {
   });
   await server.stop();
   const rows = res.payload.split('\n');
-  t.match(rows[20], 'some_here 1');
+  t.match(rows[20], 'hapi_counter{name="some here"} 1');
   t.end();
 });
