@@ -107,7 +107,8 @@ const register = (server, pluginOptions) => {
 // constructor(name, help, labelsOrConf, conf)
   const timingSummary = new prom.Summary({
     name: 'hapi_timer',
-    help: 'a timing function'
+    help: 'a timing function',
+    labelNames: ['name']
   });
   const time = name => timingSummary.startTimer({ name });
   const promCounter = new prom.Counter({

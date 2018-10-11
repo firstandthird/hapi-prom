@@ -202,15 +202,26 @@ tap.test('provides a timing metric', async t => {
   const end2 = server.prom.startTimer('response time');
   await wait(5000);
   end2();
+  const end3 = server.prom.startTimer('another time');
+  await wait(5000);
+  end3();
+
   let res = await server.inject({
     url: '/metrics',
     method: 'get'
   });
   await server.stop();
   const rows = res.payload.split('\n');
-  t.match(rows[25], 'hapi_timer_count{name="response time"} 2');
-  const sum = parseFloat(rows[24].split(' ')[2]);
-  t.equal(sum >= 5.5, true, 'sum of timing is at least equal to time waited')
+  let found = 0;
+  rows.forEach(row => {
+    if (row.startsWith('hapi_timer_sum{name="response time"}')) {
+      found++;
+    }
+    if (row.startsWith('hapi_timer_sum{name="another time"}')) {
+      found++;
+    }
+  })
+  t.equal(found, 2, 'contains metrics for both timers');
   t.end();
 });
 
@@ -224,12 +235,22 @@ tap.test('provides a counter metric', async t => {
   });
   await server.start();
   server.prom.incCounter('some here');
+  server.prom.incCounter('more over there');
   let res = await server.inject({
     url: '/metrics',
     method: 'get'
   });
   await server.stop();
   const rows = res.payload.split('\n');
-  t.match(rows[20], 'hapi_counter{name="some here"} 1');
+  let found = 0;
+  rows.forEach(row => {
+    if (row.startsWith('hapi_counter{name="some here"} 1')) {
+      found++;
+    }
+    if (row.startsWith('hapi_counter{name="more over there"} 1')) {
+      found++;
+    }
+  });
+  t.equal(found, 2, 'contains metrics for both counters');
   t.end();
 });
