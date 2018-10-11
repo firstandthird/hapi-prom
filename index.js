@@ -104,6 +104,19 @@ const register = (server, pluginOptions) => {
       return h.response(prom.register.metrics()).type(prom.contentType);
     }
   });
+  const timingSummary = new prom.Summary({
+    name: 'hapi_timer',
+    help: 'a timing function',
+    labelNames: ['name']
+  });
+  const time = name => timingSummary.startTimer({ name });
+  const promCounter = new prom.Counter({
+    name: 'hapi_counter',
+    help: `counter for hapi`,
+    labelNames: ['name']
+  });
+  const counter = name => promCounter.inc({ name });
+  server.decorate('server', 'prom', { startTimer: time, incCounter: counter });
   server.expose('client', prom);
 };
 

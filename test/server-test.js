@@ -186,3 +186,71 @@ tap.test('no cache metrics if plugin option disabled', async t => {
   await server.stop();
   t.end();
 });
+
+tap.test('provides a timing metric', async t => {
+  const server = new Hapi.Server({ port: 8080 });
+  await server.register({
+    plugin: require('../index.js'),
+    options: {
+      cachePollInterval: 1000 // ms between polling server methods for cache states
+    }
+  });
+  await server.start();
+  const end = server.prom.startTimer('response time');
+  await wait(500);
+  end();
+  const end2 = server.prom.startTimer('response time');
+  await wait(5000);
+  end2();
+  const end3 = server.prom.startTimer('another time');
+  await wait(5000);
+  end3();
+
+  let res = await server.inject({
+    url: '/metrics',
+    method: 'get'
+  });
+  await server.stop();
+  const rows = res.payload.split('\n');
+  let found = 0;
+  rows.forEach(row => {
+    if (row.startsWith('hapi_timer_sum{name="response time"}')) {
+      found++;
+    }
+    if (row.startsWith('hapi_timer_sum{name="another time"}')) {
+      found++;
+    }
+  })
+  t.equal(found, 2, 'contains metrics for both timers');
+  t.end();
+});
+
+tap.test('provides a counter metric', async t => {
+  const server = new Hapi.Server({ port: 8080 });
+  await server.register({
+    plugin: require('../index.js'),
+    options: {
+      cachePollInterval: 1000 // ms between polling server methods for cache states
+    }
+  });
+  await server.start();
+  server.prom.incCounter('some here');
+  server.prom.incCounter('more over there');
+  let res = await server.inject({
+    url: '/metrics',
+    method: 'get'
+  });
+  await server.stop();
+  const rows = res.payload.split('\n');
+  let found = 0;
+  rows.forEach(row => {
+    if (row.startsWith('hapi_counter{name="some here"} 1')) {
+      found++;
+    }
+    if (row.startsWith('hapi_counter{name="more over there"} 1')) {
+      found++;
+    }
+  });
+  t.equal(found, 2, 'contains metrics for both counters');
+  t.end();
+});
