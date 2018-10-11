@@ -104,6 +104,26 @@ const register = (server, pluginOptions) => {
       return h.response(prom.register.metrics()).type(prom.contentType);
     }
   });
+// constructor(name, help, labelsOrConf, conf)
+  const timingSummary = new prom.Summary({
+    name: 'hapi_timer',
+    help: 'a timing function'
+  });
+  const time = name => timingSummary.startTimer({ name });
+  const promCounters = {};
+  const counter = name => {
+    // prom names must be all one word:
+    name = name.replace(' ', '_');
+    if (!promCounters[name]) {
+      promCounters[name] = new prom.Counter({
+        name,
+        help: `counter_${name}`
+      });
+    }
+    promCounters[name].inc();
+  };
+  //should be combined with timer above
+  server.decorate('server', 'prom', { startTimer: time, incCounter: counter });
   server.expose('client', prom);
 };
 
