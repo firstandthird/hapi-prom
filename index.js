@@ -104,7 +104,6 @@ const register = (server, pluginOptions) => {
       return h.response(prom.register.metrics()).type(prom.contentType);
     }
   });
-// constructor(name, help, labelsOrConf, conf)
   const timingSummary = new prom.Summary({
     name: 'hapi_timer',
     help: 'a timing function',
