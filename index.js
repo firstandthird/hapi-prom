@@ -25,7 +25,7 @@ const register = (server, pluginOptions) => {
   const metric = {
     methods: {
       cache: {
-        stats: new prom.Counter({ name: 'hapi_method_cache', help: 'hapi server method cache', labelNames: ['method', 'type'] })
+        stats: new prom.Gauge({ name: 'hapi_method_cache', help: 'hapi server method cache', labelNames: ['method', 'type'] })
       }
     },
     http: {
@@ -46,11 +46,10 @@ const register = (server, pluginOptions) => {
     // counter update method:
     const countMethod = (metricName, methodName, type) => {
       const counter = metric.methods.cache[metricName];
-      const prev = counter.hashMap[`type:${type},method:${methodName}`] ? counter.hashMap[`type:${type},method:${methodName}`].value : 0;
       const key = type || metricName;
       const cur = server.methods[methodName].cache.stats[key];
-      if (typeof prev === 'number' && typeof cur === 'number') {
-        counter.labels(methodName, type).inc(cur - prev);
+      if (typeof cur === 'number') {
+        counter.labels(methodName, type).set(cur);
       }
     }
     // polling interval to get method cache stats:
