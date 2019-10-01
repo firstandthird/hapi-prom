@@ -15,11 +15,11 @@
     "prom-client": "^11.3.0"
   },
   "devDependencies": {
+    "@hapi/cookie": "^10.1.2",
+    "@hapi/hapi": "^18.4.0",
     "eslint": "^5.16.0",
     "eslint-config-firstandthird": "^4.3.0",
     "eslint-plugin-import": "^2.17.2",
-    "hapi": "^17.8.5",
-    "hapi-auth-cookie": "^9.1.0",
     "tap": "^12.7.0"
   },
   "keywords": [
