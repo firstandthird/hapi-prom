@@ -1,6 +1,6 @@
 const tap = require('tap');
-const Hapi = require('hapi');
-const cookie = require('hapi-auth-cookie');
+const Hapi = require('@hapi/hapi');
+const cookie = require('@hapi/cookie');
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 tap.test('provides a metrics route', async t => {
@@ -61,7 +61,7 @@ tap.test('auth is false by default', async t => {
     plugin: require('../index.js'),
   });
   await server.register(cookie);
-  server.auth.strategy('session', 'cookie', { password: 'password-should-be-32-characters'});
+  server.auth.strategy('session', 'cookie', { cookie: { password: 'password-should-be-32-characters'} });
   server.auth.default('session');
   await server.start();
 
@@ -80,7 +80,7 @@ tap.test('only use cache if cache server is enabled', async t => {
     plugin: require('../index.js'),
   });
   await server.register(cookie);
-  server.auth.strategy('session', 'cookie', { password: 'password-should-be-32-characters'});
+  server.auth.strategy('session', 'cookie', { cookie: { password: 'password-should-be-32-characters'} });
   server.auth.default('session');
   await server.start();
 
