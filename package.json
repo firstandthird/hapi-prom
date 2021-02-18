@@ -29,5 +29,6 @@
   ],
   "scripts": {
     "test": "tap test"
-  }
+  },
+  "license": "MIT"
 }
